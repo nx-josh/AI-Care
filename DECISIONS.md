@@ -1,4 +1,4 @@
-# 결정 사항 (Decisions Log)
+# CROSS AI Care — 결정 사항 (Decisions Log)
 
 **문서 상태**: v0.1
 **최종 수정일**: 2026-05-19

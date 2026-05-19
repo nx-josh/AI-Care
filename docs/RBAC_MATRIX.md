@@ -5,7 +5,7 @@
 **관계 문서**: `PRD.md` §10 (식별·인증), `PII_MASKING.md` §7 (접근 제어), `AI_POLICY.md`
 **대상 검토자**: 보안팀 / DPO / CS 운영팀 / Hub Builder 팀
 
-본 문서는 CS Agent 시스템 내 **누가 무엇을 할 수 있는지**를 역할 단위로 정의한다. Hub Builder RBAC와 통합 가정.
+본 문서는 CROSS AI Care 시스템 내 **누가 무엇을 할 수 있는지**를 역할 단위로 정의한다. Hub Builder RBAC와 통합 가정.
 
 ---
 

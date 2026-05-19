@@ -116,7 +116,7 @@ CROSS 레이어
 
 | Slug | 제목 | 비고 |
 |---|---|---|
-| `cs-system-intro` | CS Agent 소개 | "AI 어시스턴트 + 사람 상담사" 안내 |
+| `cs-system-intro` | CROSS AI Care 소개 | "AI 어시스턴트 + 사람 상담사" 안내 |
 | `human-agent-availability` | 사람 상담사 응답 시간 | 24시간 SLA |
 | `escalation-flow-public` | 에스컬레이션이 일어나는 경우 | 변경 액션·KB 미스·안전 |
 | `multilingual-support` | 다국어 지원 안내 | 20개 언어 |
@@ -127,7 +127,7 @@ CROSS 레이어
 | `complaint-process` | 불만 처리 절차 | 정식 절차 안내 |
 | `feedback-channel` | 피드백 채널 안내 | 별도 폼·이메일 |
 | `service-status` | 서비스 상태 확인 | 장애 페이지 링크 |
-| `version-history` | CS Agent 자체 변경사항 | 모델·기능 변경 공지 |
+| `version-history` | CROSS AI Care 자체 변경사항 | 모델·기능 변경 공지 |
 
 ---
 

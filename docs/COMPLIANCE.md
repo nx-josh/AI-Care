@@ -5,7 +5,7 @@
 **관계 문서**: `PII_MASKING.md`, `RBAC_MATRIX.md`, `AI_POLICY.md`, `TENANT_ONBOARDING.md`
 **대상 검토자**: DPO / 법무 / 보안팀 / cross_admin
 
-본 문서는 CS Agent 시스템의 **법적·규제 요구사항**과 운영 절차를 정리. GDPR(EU), CCPA(미국 캘리포니아), PIPA(한국), APPI(일본), LGPD(브라질) 등 주요 규제 매트릭스 + 동의 흐름 + 데이터 삭제 절차.
+본 문서는 CROSS AI Care 시스템의 **법적·규제 요구사항**과 운영 절차를 정리. GDPR(EU), CCPA(미국 캘리포니아), PIPA(한국), APPI(일본), LGPD(브라질) 등 주요 규제 매트릭스 + 동의 흐름 + 데이터 삭제 절차.
 
 ---
 
@@ -155,7 +155,7 @@
 
 ### 5.1 연령 확인
 - 게임사가 가입 시 연령 확인 책임 1차.
-- CS Agent 측은 게임사 제공 정보 신뢰 (별도 확인 안 함).
+- CROSS AI Care 측은 게임사 제공 정보 신뢰 (별도 확인 안 함).
 - 단, 대화 중 미성년 정황 발견 → 안전 모드 전환 + 보호자 안내.
 
 ### 5.2 미성년자 안전 모드
@@ -172,7 +172,7 @@
 ## 6. Subprocessor (외주·해외 처리자)
 
 ### 6.1 정의
-- CS Agent 서비스 제공에 데이터 처리에 관여하는 제3자.
+- CROSS AI Care 서비스 제공에 데이터 처리에 관여하는 제3자.
 - 예: LLM 제공자 (Anthropic), 클라우드 (AWS/GCP), 이메일 (Resend/Postmark), 번역 외주.
 
 ### 6.2 공시
