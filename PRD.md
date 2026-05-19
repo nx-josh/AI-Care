@@ -13,6 +13,11 @@
   - `docs/ESCALATION_PLAYBOOK.md` (큐별 운영 매뉴얼)
   - `docs/UX_FLOWS.md` (화면·UX 플로우)
   - `docs/KB_AUTHORING_GUIDE.md` (KB 작성 가이드)
+  - `docs/CROSS_KB_CATALOG.md` (CROSS 레이어 KB 콘텐츠 목차)
+  - `docs/METRICS_AND_EVAL.md` (메트릭 대시보드·AI Eval)
+  - `docs/COMPLIANCE.md` (Consent·삭제 요청·규제)
+  - `docs/ABUSE_DEFENSE.md` (봇·스팸·남용 방어)
+- 인덱스: `INDEX.md` (전체 문서 트리·미해결 통합 트래킹)
 **스테이크홀더**: CS팀 / 운영팀 / 개발팀 / 보안·모더레이션팀 / Web3 인프라팀
 
 ---
