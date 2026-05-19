@@ -5,7 +5,14 @@
 **오너**: TBD
 **관계 문서**:
 - 상위: `to-nexus/game-hub-plan` 저장소 `modules/cross-triage/` 스펙 (TRIAGE-001~006)
-- 하위: `docs/AI_POLICY.md` (AI 응답 정책), `docs/PII_MASKING.md` (PII 마스킹 명세), `docs/RBAC_MATRIX.md` (역할·권한), `docs/TENANT_ONBOARDING.md` (Tenant 온보딩·KB 학습 플로우)
+- 하위:
+  - `docs/AI_POLICY.md` (AI 응답 정책)
+  - `docs/PII_MASKING.md` (PII 마스킹 명세)
+  - `docs/RBAC_MATRIX.md` (역할·권한)
+  - `docs/TENANT_ONBOARDING.md` (Tenant 온보딩·KB 학습 플로우)
+  - `docs/ESCALATION_PLAYBOOK.md` (큐별 운영 매뉴얼)
+  - `docs/UX_FLOWS.md` (화면·UX 플로우)
+  - `docs/KB_AUTHORING_GUIDE.md` (KB 작성 가이드)
 **스테이크홀더**: CS팀 / 운영팀 / 개발팀 / 보안·모더레이션팀 / Web3 인프라팀
 
 ---
