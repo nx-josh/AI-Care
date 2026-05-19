@@ -149,20 +149,7 @@ CROSS AI Care는 game-hub-plan의 여러 모듈에 의존. 출시 전 사실 확
 
 ---
 
-## 8. 변경 이력 (전체)
-
-| 일자 | 변경 |
-|---|---|
-| 2026-05-19 | PRD v0.1 → v0.2 (CROSS Triage 정렬) → v0.3 (마일스톤 제거, 핵심 플로우 신설) |
-| 2026-05-19 | AI_POLICY, PII_MASKING, RBAC_MATRIX, TENANT_ONBOARDING v0.1 |
-| 2026-05-19 | ESCALATION_PLAYBOOK, UX_FLOWS, KB_AUTHORING_GUIDE v0.1 |
-| 2026-05-19 | CROSS_KB_CATALOG, METRICS_AND_EVAL, COMPLIANCE, ABUSE_DEFENSE v0.1 |
-| 2026-05-19 | INDEX.md 작성, 미해결 132건 통합 트래킹 |
-| 2026-05-19 | DECISIONS.md v0.1 — 107건 중 103 결정 (사용자 위임). PRD §3·§7·§8, ESCALATION_PLAYBOOK 상단, AI_POLICY §6 갱신 (상담사 없음·다국어·캐릭터 PII 반영) |
-
----
-
-## 9. 다음 단계
+## 8. 다음 단계
 
 **기획 v0.1 종결**. DECISIONS.md 적용 완료.
 
