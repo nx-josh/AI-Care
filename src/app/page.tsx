@@ -60,7 +60,7 @@ const QUEUE_LABELS: Record<string, { label: string; color: string }> = {
 const STATUS_LABELS: Record<string, { label: string; icon: string; color: string }> = {
   ai_answering: { label: "AI 응답 작성 중", icon: "⏱️", color: "text-blue-600" },
   answered: { label: "답변 완료", icon: "✓", color: "text-green-600" },
-  pending_human: { label: "사람 검토 중", icon: "⏳", color: "text-orange-600" },
+  pending_human: { label: "검토 중", icon: "⏳", color: "text-orange-600" },
   resolved: { label: "처리 완료", icon: "✓", color: "text-neutral-500" },
 };
 
@@ -861,7 +861,7 @@ function TicketDetail({ ticketId, onBack }: { ticketId: string; onBack: () => vo
       {ticket.status === "pending_human" && ticket.escalation && (
         <div className="rounded-xl border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-amber-50 p-3.5">
           <div className="flex items-center gap-2 text-sm text-orange-800 font-semibold">
-            ⏳ 사람 검토 중
+            ⏳ 검토 중
           </div>
           <div className="mt-1.5 text-xs text-orange-700">
             {QUEUE_LABELS[ticket.escalation.queue]?.label ?? ticket.escalation.queue} 으로 전달됨
