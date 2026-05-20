@@ -7,9 +7,11 @@ export type KBDoc = {
   section: string;
   body: string;
   keywords: string[];
+  injectedAt?: string;
+  docType?: "spec" | "faq" | "policy";
 };
 
-export const KB_DOCS: KBDoc[] = [
+const SEED_DOCS: KBDoc[] = [
   {
     slug: "refund-policy-cross",
     title: "CROSS 표준 환불 정책",
@@ -91,6 +93,53 @@ export const KB_DOCS: KBDoc[] = [
     keywords: ["던전3", "dungeon 3", "크래시", "crash"],
   },
 ];
+
+export const KB_DOCS: KBDoc[] = [...SEED_DOCS];
+
+function autoKeywords(text: string): string[] {
+  const tokens = text
+    .toLowerCase()
+    .replace(/[#*`>\-_[\](){}.,!?;:]/g, " ")
+    .split(/\s+/)
+    .filter((w) => w.length >= 2 && w.length <= 20);
+  const freq: Record<string, number> = {};
+  for (const t of tokens) freq[t] = (freq[t] ?? 0) + 1;
+  return Object.entries(freq)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 8)
+    .map(([w]) => w);
+}
+
+export type KBInjectInput = {
+  title: string;
+  body: string;
+  layer: "tenant" | "cross";
+  docType: "spec" | "faq" | "policy";
+  category?: KBDoc["category"];
+};
+
+export function addKB(input: KBInjectInput): KBDoc {
+  const cat: KBDoc["category"] = input.category ?? (input.docType === "policy" ? "account" : "faq");
+  const slug = `injected-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+  const doc: KBDoc = {
+    slug,
+    title: input.title,
+    layer: input.layer,
+    category: cat,
+    version: "v1.0",
+    section: input.docType === "spec" ? "§기획서" : input.docType === "policy" ? "§정책" : "§FAQ",
+    body: input.body,
+    keywords: autoKeywords(`${input.title} ${input.body}`),
+    injectedAt: new Date().toISOString(),
+    docType: input.docType,
+  };
+  KB_DOCS.unshift(doc);
+  return doc;
+}
+
+export function listInjectedKB(): KBDoc[] {
+  return KB_DOCS.filter((d) => d.injectedAt).slice(0, 50);
+}
 
 type SearchResult = {
   doc: KBDoc;

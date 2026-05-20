@@ -399,10 +399,12 @@ function GameWidgetHeader({
   const current = language ? LANG_FLAGS[language] : LANG_FLAGS.ko;
 
   return (
-    <div className="relative bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 px-4 py-3 text-white overflow-hidden border-b-2 border-amber-400/60">
-      {/* 배경 장식 */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,_rgba(56,189,248,0.25),_transparent_60%)]" />
-      <div className="absolute -top-4 -right-4 text-6xl opacity-10">❄️</div>
+    <div className="relative bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 px-4 py-3 text-white border-b-2 border-amber-400/60">
+      {/* 배경 장식 — overflow-hidden 없이 안전한 위치 */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,_rgba(56,189,248,0.25),_transparent_60%)]" />
+        <div className="absolute -top-4 -right-4 text-6xl opacity-10">❄️</div>
+      </div>
       <div className="relative flex items-center justify-between gap-2 pr-8">
         <div>
           <div className="text-[9px] uppercase tracking-[0.2em] text-amber-300 font-semibold flex items-center gap-1">
@@ -911,8 +913,19 @@ function TicketDetail({ ticketId, onBack }: { ticketId: string; onBack: () => vo
 // ADMIN CONSOLE
 // ============================================================
 
+type AdminStats = {
+  autoResolveRate24h: { rate: number; deltaPct: number; sampleSize: number };
+  citationRate: { rate: number; sampleSize: number };
+  categoryDist: Record<string, number>;
+  languageDist: Record<string, number>;
+  newCountTrend: { current: number; prev: number };
+  avgToolCalls: number;
+};
+
 function AdminConsole() {
+  const [view, setView] = useState<"queue" | "kb">("queue");
   const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [adminStats, setAdminStats] = useState<AdminStats | null>(null);
   const [selected, setSelected] = useState<Ticket | null>(null);
 
   useEffect(() => {
@@ -923,9 +936,13 @@ function AdminConsole() {
 
   async function refresh() {
     try {
-      const res = await fetch("/api/admin/queue", { cache: "no-store" });
-      const data = await res.json();
-      setTickets(data.tickets ?? []);
+      const [qRes, sRes] = await Promise.all([
+        fetch("/api/admin/queue", { cache: "no-store" }),
+        fetch("/api/admin/stats", { cache: "no-store" }),
+      ]);
+      const qData = await qRes.json();
+      setTickets(qData.tickets ?? []);
+      if (sRes.ok) setAdminStats(await sRes.json());
     } catch {}
   }
 
@@ -965,7 +982,34 @@ function AdminConsole() {
         <div className="text-xs">{tickets.length}건 대기 중</div>
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 px-3 py-3 bg-neutral-50 border-b border-neutral-200">
+      <div className="flex border-b border-neutral-200 bg-white">
+        <button
+          onClick={() => setView("queue")}
+          className={`px-4 py-2 text-xs font-medium border-b-2 transition-colors ${
+            view === "queue"
+              ? "border-blue-600 text-blue-700"
+              : "border-transparent text-neutral-500 hover:text-neutral-800"
+          }`}
+        >
+          🎫 티켓 큐
+        </button>
+        <button
+          onClick={() => setView("kb")}
+          className={`px-4 py-2 text-xs font-medium border-b-2 transition-colors ${
+            view === "kb"
+              ? "border-blue-600 text-blue-700"
+              : "border-transparent text-neutral-500 hover:text-neutral-800"
+          }`}
+        >
+          📚 KB 주입
+        </button>
+      </div>
+
+      {view === "kb" ? (
+        <KBInjectPanel />
+      ) : (
+      <>
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-2 px-3 py-3 bg-neutral-50 border-b border-neutral-200">
         <div className="rounded-lg bg-white border border-neutral-200 px-3 py-2">
           <div className="text-[10px] text-neutral-500 uppercase tracking-wide">대기 티켓</div>
           <div className="mt-0.5 flex items-baseline gap-1.5">
@@ -1005,6 +1049,113 @@ function AdminConsole() {
                 </span>
               );
             })}
+          </div>
+        </div>
+        <div className="rounded-lg bg-white border border-neutral-200 px-3 py-2">
+          <div className="text-[10px] text-neutral-500 uppercase tracking-wide">자동 해결률 (24h)</div>
+          <div className="mt-0.5 flex items-baseline gap-1.5">
+            <span className="text-xl font-semibold text-neutral-800">
+              {adminStats ? Math.round(adminStats.autoResolveRate24h.rate * 100) : "—"}
+            </span>
+            <span className="text-[10px] text-neutral-400">%</span>
+            {adminStats && adminStats.autoResolveRate24h.deltaPct !== 0 && (
+              <span
+                className={`text-[10px] font-medium ${
+                  adminStats.autoResolveRate24h.deltaPct > 0 ? "text-green-600" : "text-red-600"
+                }`}
+              >
+                {adminStats.autoResolveRate24h.deltaPct > 0 ? "▲" : "▼"}{" "}
+                {Math.abs(adminStats.autoResolveRate24h.deltaPct)}%p
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="rounded-lg bg-white border border-neutral-200 px-3 py-2">
+          <div className="text-[10px] text-neutral-500 uppercase tracking-wide">카테고리 분포</div>
+          <div className="mt-0.5 flex flex-wrap gap-1">
+            {adminStats && Object.keys(adminStats.categoryDist).length === 0 && (
+              <span className="text-[10px] text-neutral-400">—</span>
+            )}
+            {adminStats &&
+              Object.entries(adminStats.categoryDist).map(([c, n]) => {
+                const lbl = CAT_LABELS[c];
+                return (
+                  <span
+                    key={c}
+                    className="rounded-full border border-neutral-200 bg-neutral-50 px-1.5 py-0.5 text-[10px] text-neutral-700"
+                  >
+                    {lbl ? `${lbl.icon} ${lbl.label}` : c} {n}
+                  </span>
+                );
+              })}
+          </div>
+        </div>
+        <div className="rounded-lg bg-white border border-neutral-200 px-3 py-2">
+          <div className="text-[10px] text-neutral-500 uppercase tracking-wide">언어 분포</div>
+          <div className="mt-0.5 flex flex-wrap gap-1">
+            {adminStats && Object.keys(adminStats.languageDist).length === 0 && (
+              <span className="text-[10px] text-neutral-400">—</span>
+            )}
+            {adminStats &&
+              Object.entries(adminStats.languageDist).map(([iso, n]) => {
+                const flag = iso === "ko" || iso === "kor" ? "🇰🇷" : iso === "en" ? "🇺🇸" : iso === "ja" ? "🇯🇵" : "🌐";
+                return (
+                  <span
+                    key={iso}
+                    className="rounded-full border border-neutral-200 bg-white px-1.5 py-0.5 text-[10px] text-neutral-700"
+                  >
+                    {flag} {iso} {n}
+                  </span>
+                );
+              })}
+          </div>
+        </div>
+        <div className="rounded-lg bg-white border border-neutral-200 px-3 py-2">
+          <div className="text-[10px] text-neutral-500 uppercase tracking-wide">AI 인용율</div>
+          <div className="mt-0.5 flex items-baseline gap-1.5">
+            <span
+              className={`text-xl font-semibold ${
+                adminStats && adminStats.citationRate.rate < 0.9
+                  ? "text-amber-600"
+                  : "text-neutral-800"
+              }`}
+            >
+              {adminStats ? Math.round(adminStats.citationRate.rate * 100) : "—"}
+            </span>
+            <span className="text-[10px] text-neutral-400">%</span>
+            <span className="text-[10px] text-neutral-400">
+              ({adminStats?.citationRate.sampleSize ?? 0}건)
+            </span>
+          </div>
+        </div>
+        <div className="rounded-lg bg-white border border-neutral-200 px-3 py-2">
+          <div className="text-[10px] text-neutral-500 uppercase tracking-wide">24h 신규</div>
+          <div className="mt-0.5 flex items-baseline gap-1.5">
+            <span className="text-xl font-semibold text-neutral-800">
+              {adminStats?.newCountTrend.current ?? "—"}
+            </span>
+            <span className="text-[10px] text-neutral-400">건</span>
+            {adminStats && (
+              <span
+                className={`text-[10px] font-medium ${
+                  adminStats.newCountTrend.current >= adminStats.newCountTrend.prev
+                    ? "text-green-600"
+                    : "text-red-600"
+                }`}
+              >
+                {adminStats.newCountTrend.current >= adminStats.newCountTrend.prev ? "▲" : "▼"}{" "}
+                직전 {adminStats.newCountTrend.prev}
+              </span>
+            )}
+          </div>
+        </div>
+        <div className="rounded-lg bg-white border border-neutral-200 px-3 py-2">
+          <div className="text-[10px] text-neutral-500 uppercase tracking-wide">평균 AI 툴 호출</div>
+          <div className="mt-0.5 flex items-baseline gap-1.5">
+            <span className="text-xl font-semibold text-neutral-800">
+              {adminStats?.avgToolCalls ?? "—"}
+            </span>
+            <span className="text-[10px] text-neutral-400">회/티켓</span>
           </div>
         </div>
       </div>
@@ -1130,6 +1281,235 @@ function AdminConsole() {
           )}
         </div>
       </div>
+      </>
+      )}
+    </div>
+  );
+}
+
+// ============================================================
+// KB INJECT PANEL
+// ============================================================
+
+type InjectedKB = {
+  slug: string;
+  title: string;
+  layer: "tenant" | "cross";
+  category: string;
+  body: string;
+  injectedAt?: string;
+  docType?: "spec" | "faq" | "policy";
+};
+
+const DOC_TYPE_LABELS: Record<"spec" | "faq" | "policy", { label: string; icon: string }> = {
+  spec: { label: "기획서", icon: "📋" },
+  faq: { label: "FAQ", icon: "❓" },
+  policy: { label: "정책", icon: "📜" },
+};
+
+function KBInjectPanel() {
+  const [title, setTitle] = useState("");
+  const [body, setBody] = useState("");
+  const [docType, setDocType] = useState<"spec" | "faq" | "policy">("faq");
+  const [layer, setLayer] = useState<"tenant" | "cross">("tenant");
+  const [docs, setDocs] = useState<InjectedKB[]>([]);
+  const [submitting, setSubmitting] = useState(false);
+  const [flash, setFlash] = useState<string | null>(null);
+
+  useEffect(() => {
+    refresh();
+  }, []);
+
+  async function refresh() {
+    try {
+      const res = await fetch("/api/admin/kb", { cache: "no-store" });
+      const data = await res.json();
+      setDocs(data.docs ?? []);
+    } catch {}
+  }
+
+  const checks = useMemo(() => {
+    const text = `${title} ${body}`;
+    const piiHit = /\b\d{6}-\d{7}\b|\b\d{3}-\d{4}-\d{4}\b|\b[\w.+-]+@[\w-]+\.[\w.-]+\b|\b\d{4}\s?\d{4}\s?\d{4}\s?\d{4}\b/.test(text);
+    const long = body.trim().length >= 10;
+    const tooLong = body.length > 5000;
+    const dup = docs.some((d) => d.title.trim() === title.trim() && title.trim().length > 0);
+    return {
+      pii: { pass: !piiHit, label: piiHit ? "감지됨 (주민/전화/이메일/카드 패턴)" : "통과" },
+      length: { pass: long && !tooLong, label: !long ? "10자 미만" : tooLong ? "5000자 초과" : `${body.length}자` },
+      meta: { pass: title.trim().length >= 2, label: title.trim().length >= 2 ? "완전" : "제목 필요" },
+      dup: { pass: !dup, label: dup ? "동일 제목 존재" : "통과" },
+    };
+  }, [title, body, docs]);
+
+  const allPass = checks.pii.pass && checks.length.pass && checks.meta.pass && checks.dup.pass;
+
+  async function submit() {
+    if (!allPass || submitting) return;
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/admin/kb", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, body, layer, docType }),
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        setFlash(`주입 실패: ${err.error ?? "unknown"}`);
+        return;
+      }
+      setTitle("");
+      setBody("");
+      setFlash("✓ 주입 완료. 다음 AI 응답부터 검색·인용 가능합니다.");
+      await refresh();
+      setTimeout(() => setFlash(null), 4000);
+    } catch (e) {
+      setFlash(`주입 실패: ${String(e)}`);
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <div className="grid md:grid-cols-2 min-h-[500px]">
+      <div className="border-r border-neutral-200 p-4 space-y-3 overflow-y-auto max-h-[640px]">
+        <div className="text-xs text-neutral-500">
+          기획서·FAQ·정책 문서를 KB에 주입합니다. 자동 검수 통과 시 즉시 검색 인덱스에 반영되어 다음 AI 응답부터 인용 가능합니다.
+        </div>
+
+        <div>
+          <label className="block text-[11px] font-medium text-neutral-700 mb-1">제목</label>
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="예: 5월 환불 정책 v2"
+            className="w-full rounded-md border border-neutral-300 px-2.5 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-200"
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="block text-[11px] font-medium text-neutral-700 mb-1">종류</label>
+            <div className="flex gap-1">
+              {(["spec", "faq", "policy"] as const).map((d) => (
+                <button
+                  key={d}
+                  onClick={() => setDocType(d)}
+                  className={`flex-1 rounded border px-2 py-1 text-[11px] ${
+                    docType === d
+                      ? "border-blue-500 bg-blue-50 text-blue-700"
+                      : "border-neutral-300 bg-white text-neutral-600"
+                  }`}
+                >
+                  {DOC_TYPE_LABELS[d].icon} {DOC_TYPE_LABELS[d].label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="block text-[11px] font-medium text-neutral-700 mb-1">레이어</label>
+            <div className="flex gap-1">
+              {(["tenant", "cross"] as const).map((l) => (
+                <button
+                  key={l}
+                  onClick={() => setLayer(l)}
+                  className={`flex-1 rounded border px-2 py-1 text-[11px] ${
+                    layer === l
+                      ? "border-blue-500 bg-blue-50 text-blue-700"
+                      : "border-neutral-300 bg-white text-neutral-600"
+                  }`}
+                >
+                  {l === "tenant" ? "Tenant" : "CROSS"}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <label className="block text-[11px] font-medium text-neutral-700 mb-1">본문 (마크다운/텍스트)</label>
+          <textarea
+            value={body}
+            onChange={(e) => setBody(e.target.value)}
+            rows={10}
+            placeholder="여기에 기획서나 FAQ 본문을 붙여넣으세요."
+            className="w-full rounded-md border border-neutral-300 px-2.5 py-1.5 text-xs font-mono leading-relaxed focus:outline-none focus:ring-2 focus:ring-blue-200"
+          />
+        </div>
+
+        <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-2.5 space-y-1 text-[11px]">
+          <div className="font-medium text-neutral-700 mb-1">자동 검수</div>
+          <CheckRow ok={checks.meta.pass} label="메타데이터" detail={checks.meta.label} />
+          <CheckRow ok={checks.pii.pass} label="PII 스캐너" detail={checks.pii.label} />
+          <CheckRow ok={checks.length.pass} label="길이" detail={checks.length.label} />
+          <CheckRow ok={checks.dup.pass} label="중복 검사" detail={checks.dup.label} />
+        </div>
+
+        <button
+          disabled={!allPass || submitting}
+          onClick={submit}
+          className={`w-full rounded-md px-3 py-2 text-xs font-medium transition-colors ${
+            allPass && !submitting
+              ? "bg-blue-600 text-white hover:bg-blue-700"
+              : "bg-neutral-200 text-neutral-400 cursor-not-allowed"
+          }`}
+        >
+          {submitting ? "주입 중..." : allPass ? "검수 통과 → 주입" : "검수 미통과"}
+        </button>
+
+        {flash && (
+          <div className="text-[11px] text-blue-700 bg-blue-50 border border-blue-200 rounded p-2">
+            {flash}
+          </div>
+        )}
+      </div>
+
+      <div className="p-4 overflow-y-auto max-h-[640px] bg-neutral-50">
+        <div className="flex items-center justify-between mb-2">
+          <div className="text-xs font-medium text-neutral-700">주입된 문서 ({docs.length})</div>
+          <button onClick={refresh} className="text-[11px] text-blue-600 hover:underline">
+            새로고침
+          </button>
+        </div>
+        {docs.length === 0 && (
+          <div className="text-center text-neutral-400 text-xs pt-12">
+            아직 주입된 문서가 없습니다.
+          </div>
+        )}
+        <div className="space-y-2">
+          {docs.map((d) => {
+            const dt = d.docType ?? "faq";
+            return (
+              <div
+                key={d.slug}
+                className="rounded-lg border border-neutral-200 bg-white p-2.5 text-xs"
+              >
+                <div className="flex items-center justify-between mb-1">
+                  <span className="rounded-full border border-neutral-300 bg-neutral-100 px-1.5 py-0.5 text-[10px] text-neutral-600">
+                    {DOC_TYPE_LABELS[dt].icon} {DOC_TYPE_LABELS[dt].label}
+                  </span>
+                  <span className="text-[10px] text-neutral-400">
+                    {d.layer === "tenant" ? "Tenant" : "CROSS"} · {d.injectedAt ? new Date(d.injectedAt).toLocaleTimeString() : ""}
+                  </span>
+                </div>
+                <div className="font-medium text-neutral-800">{d.title}</div>
+                <div className="mt-1 text-[11px] text-neutral-500 line-clamp-2">{d.body}</div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function CheckRow({ ok, label, detail }: { ok: boolean; label: string; detail: string }) {
+  return (
+    <div className="flex items-center justify-between">
+      <span className="text-neutral-600">
+        <span className={ok ? "text-green-600" : "text-red-600"}>{ok ? "✓" : "✗"}</span> {label}
+      </span>
+      <span className={`text-[10px] ${ok ? "text-neutral-500" : "text-red-600"}`}>{detail}</span>
     </div>
   );
 }
