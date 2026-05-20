@@ -908,6 +908,30 @@ function AdminConsole() {
     } catch {}
   }
 
+  const stats = useMemo(() => {
+    const now = Date.now();
+    const highCount = tickets.filter((t) => t.escalation?.priority === "high").length;
+    const oldestMs = tickets.reduce((max, t) => {
+      const age = now - new Date(t.createdAt).getTime();
+      return age > max ? age : max;
+    }, 0);
+    const queueCounts = tickets.reduce<Record<string, number>>((acc, t) => {
+      const q = t.escalation?.queue ?? "general";
+      acc[q] = (acc[q] ?? 0) + 1;
+      return acc;
+    }, {});
+    return { total: tickets.length, highCount, oldestMs, queueCounts };
+  }, [tickets]);
+
+  function formatAge(ms: number): string {
+    if (ms <= 0) return "—";
+    const min = Math.floor(ms / 60000);
+    if (min < 60) return `${min}분`;
+    const hr = Math.floor(min / 60);
+    const remMin = min % 60;
+    return remMin === 0 ? `${hr}시간` : `${hr}시간 ${remMin}분`;
+  }
+
   return (
     <div className="rounded-2xl bg-white shadow-lg border border-neutral-200 overflow-hidden">
       <div className="bg-gradient-to-r from-neutral-800 to-neutral-700 px-5 py-3 text-white flex items-center justify-between">
@@ -918,6 +942,50 @@ function AdminConsole() {
           </div>
         </div>
         <div className="text-xs">{tickets.length}건 대기 중</div>
+      </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 px-3 py-3 bg-neutral-50 border-b border-neutral-200">
+        <div className="rounded-lg bg-white border border-neutral-200 px-3 py-2">
+          <div className="text-[10px] text-neutral-500 uppercase tracking-wide">대기 티켓</div>
+          <div className="mt-0.5 flex items-baseline gap-1.5">
+            <span className="text-xl font-semibold text-neutral-800">{stats.total}</span>
+            <span className="text-[10px] text-neutral-400">건</span>
+          </div>
+        </div>
+        <div className="rounded-lg bg-white border border-neutral-200 px-3 py-2">
+          <div className="text-[10px] text-neutral-500 uppercase tracking-wide">HIGH 우선순위</div>
+          <div className="mt-0.5 flex items-baseline gap-1.5">
+            <span className={`text-xl font-semibold ${stats.highCount > 0 ? "text-red-600" : "text-neutral-400"}`}>
+              {stats.highCount}
+            </span>
+            <span className="text-[10px] text-neutral-400">건</span>
+          </div>
+        </div>
+        <div className="rounded-lg bg-white border border-neutral-200 px-3 py-2">
+          <div className="text-[10px] text-neutral-500 uppercase tracking-wide">최장 대기</div>
+          <div className="mt-0.5 text-sm font-semibold text-neutral-800">
+            {formatAge(stats.oldestMs)}
+          </div>
+        </div>
+        <div className="rounded-lg bg-white border border-neutral-200 px-3 py-2">
+          <div className="text-[10px] text-neutral-500 uppercase tracking-wide">큐 분포</div>
+          <div className="mt-0.5 flex flex-wrap gap-1">
+            {Object.entries(stats.queueCounts).length === 0 && (
+              <span className="text-[10px] text-neutral-400">—</span>
+            )}
+            {Object.entries(stats.queueCounts).map(([q, n]) => {
+              const label = QUEUE_LABELS[q] ?? QUEUE_LABELS.general;
+              return (
+                <span
+                  key={q}
+                  className={`rounded-full border px-1.5 py-0.5 text-[10px] ${label.color}`}
+                >
+                  {label.label} {n}
+                </span>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       <div className="grid md:grid-cols-2 min-h-[500px]">
