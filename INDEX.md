@@ -3,7 +3,8 @@
 **프로젝트**: CROSS AI Care (CROSS Triage 확장형)
 **출시 목표**: 2026년 6월 내
 **관계**: `to-nexus/game-hub-plan` CROSS Triage 모듈의 확장
-**문서 상태**: 기획 v0.1 + DECISIONS v0.1, 코드 미작성
+**문서 상태**: 기획 v0.1 + DECISIONS v0.1
+**구현 상태**: M0 (Vercel 프로덕션) — `/api/tickets`, `/api/admin/{queue,stats,kb}`, `/api/faq`, `/api/me` + Hub Console (티켓 큐 · KB 주입 탭)
 
 ---
 
