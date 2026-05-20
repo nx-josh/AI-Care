@@ -1,4 +1,5 @@
 import { nanoid } from "@/lib/nanoid";
+import { getSeedTickets } from "@/lib/mock/seed";
 
 export type TicketStatus = "ai_answering" | "answered" | "pending_human" | "resolved";
 export type QueueName = "payment" | "infra" | "moderation" | "tenant" | "general";
@@ -31,6 +32,13 @@ export type Ticket = {
 
 const tickets: Ticket[] = [];
 
+function ensureSeeded() {
+  if (tickets.length === 0) {
+    const seed = getSeedTickets();
+    for (const t of seed) tickets.push(t);
+  }
+}
+
 export function createTicket(input: {
   category: string;
   subject: string;
@@ -62,6 +70,7 @@ export function updateTicket(id: string, patch: Partial<Ticket>): Ticket | null 
 }
 
 export function getTicket(id: string): Ticket | null {
+  ensureSeeded();
   return tickets.find((t) => t.id === id) ?? null;
 }
 
@@ -69,6 +78,7 @@ export function listTickets(opts?: {
   userId?: string;
   statusIn?: TicketStatus[];
 }): Ticket[] {
+  ensureSeeded();
   return tickets.filter((t) => {
     if (opts?.userId && t.userId !== opts.userId) return false;
     if (opts?.statusIn && !opts.statusIn.includes(t.status)) return false;

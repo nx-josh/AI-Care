@@ -32,12 +32,21 @@ type FAQ = {
   layer: "tenant" | "cross";
 };
 
-const CAT_LABELS: Record<string, { label: string; icon: string; color: string }> = {
-  account: { label: "계정·결제", icon: "💳", color: "bg-emerald-100 text-emerald-700" },
-  faq: { label: "게임 진행", icon: "🎮", color: "bg-blue-100 text-blue-700" },
-  bug: { label: "버그·오류", icon: "🐛", color: "bg-amber-100 text-amber-700" },
-  abuse: { label: "유저 신고", icon: "🚨", color: "bg-rose-100 text-rose-700" },
-  onchain: { label: "지갑·블록체인", icon: "🔗", color: "bg-purple-100 text-purple-700" },
+type ProfileLite = {
+  displayName: string;
+  banned: boolean;
+  tenantId: string;
+  mainCharacter: { id: string; name: string; level: number; class: string } | null;
+  progress: { currentQuest: string; questStep: string; guild: string | null };
+  walletShort: string | null;
+};
+
+const CAT_LABELS: Record<string, { label: string; icon: string; bg: string; text: string }> = {
+  account: { label: "계정·결제", icon: "💳", bg: "bg-emerald-50", text: "text-emerald-700" },
+  faq: { label: "게임 진행", icon: "🎮", bg: "bg-blue-50", text: "text-blue-700" },
+  bug: { label: "버그·오류", icon: "🐛", bg: "bg-amber-50", text: "text-amber-700" },
+  abuse: { label: "유저 신고", icon: "🚨", bg: "bg-rose-50", text: "text-rose-700" },
+  onchain: { label: "지갑·NFT", icon: "🔗", bg: "bg-purple-50", text: "text-purple-700" },
 };
 
 const QUEUE_LABELS: Record<string, { label: string; color: string }> = {
@@ -61,21 +70,43 @@ export default function Demo() {
   const [language, setLanguage] = useState<"ko" | "en" | "ja">("ko");
 
   return (
-    <div className="min-h-screen bg-neutral-100">
-      <header className="border-b border-neutral-200 bg-white">
+    <div
+      className={`min-h-screen transition-colors duration-500 ${
+        tab === "user" ? "bg-slate-950" : "bg-neutral-100"
+      }`}
+    >
+      <header
+        className={`border-b transition-colors ${
+          tab === "user"
+            ? "border-white/10 bg-slate-900/70 backdrop-blur"
+            : "border-neutral-200 bg-white"
+        }`}
+      >
         <div className="mx-auto max-w-6xl px-6 py-3 flex items-center justify-between gap-4">
           <div>
-            <h1 className="text-lg font-semibold">CROSS AI Care</h1>
-            <p className="text-xs text-neutral-500">
+            <h1
+              className={`text-lg font-semibold ${
+                tab === "user" ? "text-white" : "text-neutral-900"
+              }`}
+            >
+              CROSS AI Care
+            </h1>
+            <p className={`text-xs ${tab === "user" ? "text-white/60" : "text-neutral-500"}`}>
               게임 고객지원 시스템 — 데모
             </p>
           </div>
           <div className="flex items-center gap-2 text-sm">
-            <div className="flex rounded-lg border border-neutral-300 overflow-hidden">
+            <div
+              className={`flex rounded-lg overflow-hidden border ${
+                tab === "user" ? "border-white/20" : "border-neutral-300"
+              }`}
+            >
               <button
                 onClick={() => setTab("user")}
                 className={`px-3 py-1.5 text-xs ${
-                  tab === "user" ? "bg-blue-600 text-white" : "bg-white"
+                  tab === "user"
+                    ? "bg-blue-600 text-white"
+                    : "bg-white text-neutral-700"
                 }`}
               >
                 🎮 유저 (게임 안 위젯)
@@ -83,7 +114,11 @@ export default function Demo() {
               <button
                 onClick={() => setTab("admin")}
                 className={`px-3 py-1.5 text-xs ${
-                  tab === "admin" ? "bg-blue-600 text-white" : "bg-white"
+                  tab === "admin"
+                    ? "bg-blue-600 text-white"
+                    : tab === "user"
+                    ? "bg-white/10 text-white/70"
+                    : "bg-white text-neutral-700"
                 }`}
               >
                 🛠️ 운영자 (Hub Console)
@@ -94,21 +129,23 @@ export default function Demo() {
                 <select
                   value={userId}
                   onChange={(e) => setUserId(e.target.value)}
-                  className="rounded border border-neutral-300 bg-white px-2 py-1 text-xs"
+                  className="rounded border border-white/20 bg-white/10 text-white px-2 py-1 text-xs backdrop-blur"
                 >
                   {DEMO_USERS.map((u) => (
-                    <option key={u.id} value={u.id}>
+                    <option key={u.id} value={u.id} className="text-neutral-900">
                       {u.label}
                     </option>
                   ))}
                 </select>
-                <div className="flex rounded border border-neutral-300 overflow-hidden">
+                <div className="flex rounded border border-white/20 overflow-hidden">
                   {(["ko", "en", "ja"] as const).map((l) => (
                     <button
                       key={l}
                       onClick={() => setLanguage(l)}
                       className={`px-2 py-1 text-xs ${
-                        language === l ? "bg-neutral-800 text-white" : "bg-white"
+                        language === l
+                          ? "bg-white text-neutral-900"
+                          : "bg-white/10 text-white/80"
                       }`}
                     >
                       {l === "ko" ? "한국어" : l === "en" ? "EN" : "日本語"}
@@ -121,18 +158,205 @@ export default function Demo() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-6xl px-6 py-6">
+      <main className="mx-auto max-w-6xl px-6 py-8">
         {tab === "user" ? (
-          <UserWidget userId={userId} language={language} />
+          <GameSceneView userId={userId} language={language} />
         ) : (
           <AdminConsole />
         )}
       </main>
 
-      <footer className="mx-auto max-w-6xl px-6 py-4 text-[11px] text-neutral-500 border-t border-neutral-200 bg-white">
+      <footer
+        className={`mx-auto max-w-6xl px-6 py-4 text-[11px] border-t ${
+          tab === "user"
+            ? "text-white/40 border-white/10"
+            : "text-neutral-500 border-neutral-200 bg-white"
+        }`}
+      >
         AI 응답은 즉시 (10초 이내) · 사람 처리는 비실시간 (SLA 미보장) · 변경 액션은 사람만 처리
       </footer>
     </div>
+  );
+}
+
+// ============================================================
+// GAME SCENE VIEW (실제 게임 화면 + AI Care 버튼 + 모달 위젯)
+// ============================================================
+
+function GameSceneView({ userId, language }: { userId: string; language: "ko" | "en" | "ja" }) {
+  const [widgetOpen, setWidgetOpen] = useState(false);
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    fetch(`/api/tickets?userId=${userId}&status=pending_human,ai_answering`)
+      .then((r) => r.json())
+      .then((d) => setPendingCount((d.tickets ?? []).length))
+      .catch(() => {});
+  }, [userId, widgetOpen]);
+
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setWidgetOpen(false);
+    }
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  return (
+    <div className="relative">
+      {/* 게임 뷰포트 — 세로형 (모바일 게임 화면) */}
+      <div
+        className="relative mx-auto w-full max-w-[420px] rounded-[2.5rem] overflow-hidden shadow-2xl ring-4 ring-neutral-900/80"
+        style={{ aspectRatio: "9 / 16" }}
+      >
+        {/* 게임 배경 이미지 */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/gameplay-world-map.jpg"
+          alt="Game scene"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+
+        {/* 위젯 열렸을 때 dim + blur */}
+        <div
+          className={`absolute inset-0 transition-all duration-300 ${
+            widgetOpen ? "bg-black/55 backdrop-blur-sm" : "bg-black/0 backdrop-blur-0"
+          }`}
+          onClick={() => widgetOpen && setWidgetOpen(false)}
+        />
+
+        {/* 게임 상단 HUD (이미지 위 오버레이) */}
+        {!widgetOpen && (
+          <div className="absolute top-3 left-3 right-3 flex items-start justify-between pointer-events-none">
+            <div className="flex flex-col gap-1 text-white">
+              <div className="flex items-center gap-1 bg-black/50 backdrop-blur rounded-md px-1.5 py-0.5 w-fit">
+                <div className="w-16 h-1.5 rounded-full bg-red-900/60 overflow-hidden">
+                  <div className="h-full bg-red-500" style={{ width: "78%" }} />
+                </div>
+                <span className="text-[9px]">234/300</span>
+              </div>
+              <div className="flex items-center gap-1 bg-black/50 backdrop-blur rounded-md px-1.5 py-0.5 w-fit">
+                <div className="w-12 h-1.5 rounded-full bg-blue-900/60 overflow-hidden">
+                  <div className="h-full bg-blue-400" style={{ width: "60%" }} />
+                </div>
+                <span className="text-[9px]">60/100</span>
+              </div>
+            </div>
+            <div className="flex flex-col gap-1 items-end text-white">
+              <div className="bg-black/50 backdrop-blur rounded-md px-1.5 py-0.5 text-[9px]">
+                🗺️ Chapter 3
+              </div>
+              <div className="bg-black/50 backdrop-blur rounded-md px-1.5 py-0.5 text-[9px]">
+                💰 12,450
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* 게임 하단 액션바 — 세로 화면 컴팩트 */}
+        {!widgetOpen && (
+          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-end gap-1.5">
+            <GameActionButton icon="⚔️" label="QUEST" compact />
+            <GameActionButton icon="🎒" label="ITEM" compact />
+            <GameActionButton icon="🗺️" label="MAP" compact />
+            <GameActionButton icon="🛒" label="SHOP" compact />
+            <GameActionButton
+              icon="🎧"
+              label="AI Care"
+              highlight
+              compact
+              badge={pendingCount > 0 ? pendingCount : undefined}
+              onClick={() => setWidgetOpen(true)}
+            />
+          </div>
+        )}
+
+        {/* AI Care 위젯 모달 레이어 — 세로 화면에 꽉 채우기 */}
+        {widgetOpen && (
+          <div
+            className="absolute inset-0 flex items-end sm:items-center justify-center p-2 sm:p-3 animate-[fadeIn_0.2s_ease-out]"
+            onClick={() => setWidgetOpen(false)}
+          >
+            <div
+              className="relative w-full max-h-full overflow-hidden"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <UserWidget
+                userId={userId}
+                language={language}
+                onClose={() => setWidgetOpen(false)}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 게임 뷰포트 외부 — 데모 안내 */}
+      <div className="mt-3 flex items-center justify-between text-[11px] text-white/60 px-2">
+        <div>
+          💡 게임 화면 안에 AI Care 버튼이 임베드된 모습입니다.
+          {!widgetOpen && (
+            <span className="ml-1">
+              하단 <b className="text-pink-300">🎧 AI Care</b> 버튼을 눌러보세요.
+            </span>
+          )}
+          {widgetOpen && <span className="ml-1">ESC 또는 바깥 클릭으로 닫기.</span>}
+        </div>
+      </div>
+
+      <style jsx>{`
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: scale(0.95);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1);
+          }
+        }
+      `}</style>
+    </div>
+  );
+}
+
+function GameActionButton({
+  icon,
+  label,
+  highlight,
+  badge,
+  compact,
+  onClick,
+}: {
+  icon: string;
+  label: string;
+  highlight?: boolean;
+  badge?: number;
+  compact?: boolean;
+  onClick?: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={!onClick && !highlight}
+      className={`group relative flex flex-col items-center gap-0.5 rounded-xl backdrop-blur-md transition-all duration-200 ${
+        compact ? "px-2 py-1.5" : "px-3 py-2.5"
+      } ${
+        highlight
+          ? "bg-gradient-to-br from-pink-500 to-purple-600 ring-2 ring-pink-300/50 hover:scale-110 hover:ring-pink-300 shadow-lg shadow-pink-500/50 animate-pulse hover:animate-none cursor-pointer"
+          : "bg-black/40 ring-1 ring-white/20 hover:bg-black/60 hover:ring-white/40 cursor-not-allowed opacity-70"
+      }`}
+    >
+      {badge !== undefined && (
+        <span className={`absolute -top-1 -right-1 min-w-[16px] h-[16px] rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center px-1 ring-2 ring-white/80`}>
+          {badge}
+        </span>
+      )}
+      <span className={compact ? "text-base" : "text-xl"}>{icon}</span>
+      <span className={`uppercase tracking-wider text-white font-semibold ${compact ? "text-[8px]" : "text-[9px]"}`}>
+        {label}
+      </span>
+    </button>
   );
 }
 
@@ -142,9 +366,18 @@ export default function Demo() {
 
 type UserView = { type: "home" } | { type: "form"; presetCategory?: string; presetBody?: string } | { type: "detail"; ticketId: string };
 
-function UserWidget({ userId, language }: { userId: string; language: "ko" | "en" | "ja" }) {
+function UserWidget({
+  userId,
+  language,
+  onClose,
+}: {
+  userId: string;
+  language: "ko" | "en" | "ja";
+  onClose?: () => void;
+}) {
   const [view, setView] = useState<UserView>({ type: "home" });
   const [myTickets, setMyTickets] = useState<Ticket[]>([]);
+  const [profile, setProfile] = useState<ProfileLite | null>(null);
 
   async function refreshTickets() {
     try {
@@ -156,22 +389,36 @@ function UserWidget({ userId, language }: { userId: string; language: "ko" | "en
 
   useEffect(() => {
     refreshTickets();
+    fetch(`/api/me?userId=${userId}`)
+      .then((r) => r.json())
+      .then((d) => setProfile(d.profile ?? null))
+      .catch(() => {});
+    setView({ type: "home" });
   }, [userId]);
 
   return (
-    <div className="rounded-2xl bg-white shadow-lg border border-neutral-200 overflow-hidden">
-      <div className="bg-gradient-to-r from-blue-600 to-indigo-600 px-5 py-3 text-white">
-        <div className="text-sm font-medium">🎧 고객지원</div>
-        <div className="text-xs opacity-90">무엇을 도와드릴까요?</div>
+    <div className="mx-auto w-full rounded-2xl bg-white shadow-2xl border border-white/20 overflow-hidden ring-1 ring-black/5 max-h-full flex flex-col">
+      <div className="relative shrink-0">
+        <GameWidgetHeader profile={profile} />
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center text-sm backdrop-blur transition-colors"
+            aria-label="Close"
+          >
+            ✕
+          </button>
+        )}
       </div>
 
-      <div className="p-5">
+      <div className="p-4 overflow-y-auto flex-1">
         {view.type === "home" && (
           <Home
-            userId={userId}
             language={language}
             tickets={myTickets}
-            onOpenForm={(cat, body) => setView({ type: "form", presetCategory: cat, presetBody: body })}
+            onOpenForm={(cat, body) =>
+              setView({ type: "form", presetCategory: cat, presetBody: body })
+            }
             onOpenTicket={(id) => setView({ type: "detail", ticketId: id })}
           />
         )}
@@ -202,14 +449,64 @@ function UserWidget({ userId, language }: { userId: string; language: "ko" | "en
   );
 }
 
+function GameWidgetHeader({ profile }: { profile: ProfileLite | null }) {
+  return (
+    <div className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 px-4 py-3 text-white overflow-hidden">
+      <div className="absolute -top-4 -right-4 text-6xl opacity-10">🎧</div>
+      <div className="relative flex items-center justify-between gap-2 pr-8">
+        <div>
+          <div className="text-[9px] uppercase tracking-wider opacity-80">
+            {profile?.tenantId === "pixel-heroes" ? "🎮 Pixel Heroes" : "🎮 Game"}
+          </div>
+          <div className="text-sm font-bold mt-0.5">AI Care 고객지원</div>
+        </div>
+        {profile && (
+          <div className="flex items-center gap-1.5 rounded-full bg-white/15 backdrop-blur px-2 py-1 ring-1 ring-white/30">
+            <div className="w-7 h-7 rounded-full bg-white/30 flex items-center justify-center text-xs font-bold">
+              {profile.displayName.slice(0, 1)}
+            </div>
+            <div className="leading-tight">
+              <div className="text-[10px] font-semibold flex items-center gap-1">
+                {profile.displayName}
+                {profile.banned && (
+                  <span className="text-[7px] px-1 py-0.5 rounded bg-red-500/40">BAN</span>
+                )}
+              </div>
+              <div className="text-[8px] opacity-80">
+                {profile.mainCharacter
+                  ? `Lv.${profile.mainCharacter.level} ${profile.mainCharacter.class}`
+                  : "—"}
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+      {profile && (
+        <div className="relative mt-2.5 grid grid-cols-3 gap-1.5 text-[9px]">
+          <div className="rounded-md bg-white/10 backdrop-blur px-1.5 py-1 ring-1 ring-white/20">
+            <div className="opacity-70">진행도</div>
+            <div className="font-medium truncate">{profile.progress.questStep || "—"}</div>
+          </div>
+          <div className="rounded-md bg-white/10 backdrop-blur px-1.5 py-1 ring-1 ring-white/20">
+            <div className="opacity-70">길드</div>
+            <div className="font-medium truncate">{profile.progress.guild || "없음"}</div>
+          </div>
+          <div className="rounded-md bg-white/10 backdrop-blur px-1.5 py-1 ring-1 ring-white/20">
+            <div className="opacity-70">지갑</div>
+            <div className="font-mono text-[8px]">{profile.walletShort || "—"}</div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Home({
-  userId,
   language,
   tickets,
   onOpenForm,
   onOpenTicket,
 }: {
-  userId: string;
   language: "ko" | "en" | "ja";
   tickets: Ticket[];
   onOpenForm: (category?: string, body?: string) => void;
@@ -244,14 +541,13 @@ function Home({
             placeholder="질문을 검색하거나 입력하세요…"
             value={q}
             onChange={(e) => setQ(e.target.value)}
-            className="w-full rounded-lg border border-neutral-300 px-10 py-3 text-sm focus:border-blue-500 focus:outline-none"
+            className="w-full rounded-xl border border-neutral-300 px-11 py-3 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
           />
-          <span className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">🔍</span>
+          <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-neutral-400">🔍</span>
         </div>
 
-        {/* FAQ suggestions */}
         {faqs.length > 0 && !selectedFaq && (
-          <div className="mt-3 rounded-lg border border-neutral-200 bg-neutral-50 overflow-hidden">
+          <div className="mt-3 rounded-xl border border-neutral-200 bg-neutral-50 overflow-hidden">
             <div className="px-3 py-1.5 text-[10px] text-neutral-500 bg-neutral-100 border-b border-neutral-200">
               💡 빠른 도움말 ({faqs.length}건)
             </div>
@@ -259,23 +555,25 @@ function Home({
               <button
                 key={f.slug}
                 onClick={() => setSelectedFaq(f)}
-                className="w-full text-left px-3 py-2 text-sm hover:bg-white border-b border-neutral-200 last:border-b-0"
+                className="w-full text-left px-3 py-2.5 text-sm hover:bg-white border-b border-neutral-200 last:border-b-0"
               >
                 <div className="font-medium text-neutral-800">{f.title}</div>
                 <div className="text-[10px] text-neutral-500 mt-0.5">
-                  {f.layer === "cross" ? "CROSS 표준" : "게임별"} · {f.version}
+                  {f.layer === "cross" ? "🔵 CROSS 표준" : "🟢 게임별"} · {f.version}
                 </div>
               </button>
             ))}
           </div>
         )}
 
-        {/* FAQ detail */}
         {selectedFaq && (
-          <div className="mt-3 rounded-lg border border-blue-200 bg-blue-50 p-4">
+          <div className="mt-3 rounded-xl border border-blue-300 bg-blue-50 p-4">
             <div className="flex items-start justify-between mb-2">
               <div className="font-medium text-sm text-neutral-800">{selectedFaq.title}</div>
-              <button onClick={() => setSelectedFaq(null)} className="text-xs text-neutral-500 hover:text-neutral-800">
+              <button
+                onClick={() => setSelectedFaq(null)}
+                className="text-xs text-neutral-500 hover:text-neutral-800"
+              >
                 ✕
               </button>
             </div>
@@ -289,13 +587,13 @@ function Home({
                   setSelectedFaq(null);
                   setQ("");
                 }}
-                className="flex-1 rounded bg-green-600 text-white text-xs py-2 hover:bg-green-700"
+                className="flex-1 rounded-lg bg-green-600 text-white text-xs py-2 hover:bg-green-700 font-medium"
               >
                 ✓ 해결됐어요
               </button>
               <button
                 onClick={() => onOpenForm(selectedFaq.category, q)}
-                className="flex-1 rounded border border-neutral-300 text-xs py-2 hover:bg-white"
+                className="flex-1 rounded-lg border border-neutral-300 text-xs py-2 hover:bg-white font-medium"
               >
                 도움 더 필요해요
               </button>
@@ -303,13 +601,12 @@ function Home({
           </div>
         )}
 
-        {/* Direct submit */}
         {q.trim().length >= 2 && faqs.length === 0 && (
-          <div className="mt-3 rounded-lg border border-neutral-200 bg-neutral-50 p-3 text-xs text-neutral-500">
+          <div className="mt-3 rounded-xl border border-neutral-200 bg-neutral-50 p-3 text-xs text-neutral-500">
             검증된 가이드가 없어요.{" "}
             <button
               onClick={() => onOpenForm(undefined, q)}
-              className="text-blue-600 underline"
+              className="text-blue-600 underline font-medium"
             >
               정식 문의로 작성
             </button>
@@ -320,21 +617,24 @@ function Home({
       {/* Category quick start */}
       {!selectedFaq && (
         <div>
-          <div className="text-xs text-neutral-500 mb-2">또는 카테고리 선택</div>
+          <div className="text-xs text-neutral-500 mb-2 font-medium">또는 카테고리 선택</div>
           <div className="grid grid-cols-5 gap-2">
-            {SCENARIOS.map((s) => (
-              <button
-                key={s.id}
-                onClick={() => onOpenForm(s.category, s.samples[language])}
-                className="flex flex-col items-center gap-1 rounded-lg border border-neutral-200 bg-white px-2 py-3 hover:border-blue-400 hover:bg-blue-50"
-                title={s.description}
-              >
-                <span className="text-2xl">{s.icon}</span>
-                <span className="text-[10px] text-neutral-700 text-center leading-tight">
-                  {s.label}
-                </span>
-              </button>
-            ))}
+            {SCENARIOS.map((s) => {
+              const cat = CAT_LABELS[s.category] ?? CAT_LABELS.account;
+              return (
+                <button
+                  key={s.id}
+                  onClick={() => onOpenForm(s.category, s.samples[language])}
+                  className={`flex flex-col items-center gap-1 rounded-xl border-2 border-transparent ${cat.bg} px-2 py-3 hover:border-indigo-300 transition-all hover:scale-105`}
+                  title={s.description}
+                >
+                  <span className="text-2xl">{s.icon}</span>
+                  <span className={`text-[10px] ${cat.text} text-center leading-tight font-medium`}>
+                    {s.label}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
       )}
@@ -342,9 +642,12 @@ function Home({
       {/* My tickets */}
       {tickets.length > 0 && (
         <div>
-          <div className="text-xs text-neutral-500 mb-2">📋 내 문의 ({tickets.length}건)</div>
+          <div className="text-xs text-neutral-500 mb-2 font-medium flex items-center justify-between">
+            <span>📋 내 문의 ({tickets.length}건)</span>
+            <span className="text-[10px] text-neutral-400">최근순</span>
+          </div>
           <div className="space-y-1.5">
-            {tickets.slice(0, 5).map((t) => (
+            {tickets.slice(0, 6).map((t) => (
               <TicketRow key={t.id} ticket={t} onClick={() => onOpenTicket(t.id)} />
             ))}
           </div>
@@ -356,22 +659,26 @@ function Home({
 
 function TicketRow({ ticket, onClick }: { ticket: Ticket; onClick: () => void }) {
   const status = STATUS_LABELS[ticket.status];
-  const cat = CAT_LABELS[ticket.category] ?? { label: ticket.category, icon: "📝", color: "bg-neutral-100" };
+  const cat = CAT_LABELS[ticket.category] ?? CAT_LABELS.account;
   return (
     <button
       onClick={onClick}
-      className="w-full text-left rounded-lg border border-neutral-200 bg-white px-3 py-2 hover:border-neutral-400"
+      className="w-full text-left rounded-xl border border-neutral-200 bg-white px-3 py-2.5 hover:border-indigo-400 hover:shadow-sm transition-all"
     >
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2 min-w-0">
-          <span className="text-sm">{cat.icon}</span>
-          <span className="text-xs font-medium text-neutral-800 truncate">{ticket.subject}</span>
+          <span className={`text-lg ${cat.bg} rounded-lg w-8 h-8 flex items-center justify-center`}>
+            {cat.icon}
+          </span>
+          <div className="min-w-0">
+            <div className="text-xs font-medium text-neutral-800 truncate">{ticket.subject}</div>
+            <div className="text-[10px] text-neutral-400 font-mono">{ticket.id}</div>
+          </div>
         </div>
-        <span className={`text-[10px] ${status.color} whitespace-nowrap ml-2`}>
+        <span className={`text-[10px] ${status.color} whitespace-nowrap ml-2 font-medium`}>
           {status.icon} {status.label}
         </span>
       </div>
-      <div className="mt-0.5 text-[10px] text-neutral-400 font-mono">{ticket.id}</div>
     </button>
   );
 }
@@ -415,6 +722,7 @@ function TicketForm({
       });
       const data = await res.json();
       if (data.ticket) onSubmitted(data.ticket);
+      else alert(`문의 제출 실패: ${data.error ?? "unknown"} ${data.detail ?? ""}`);
     } catch (e) {
       alert(`문의 제출 실패: ${(e as Error).message}`);
     } finally {
@@ -428,44 +736,46 @@ function TicketForm({
         ← 뒤로
       </button>
 
-      <div className="text-sm font-medium">📝 문의 작성</div>
+      <div className="text-sm font-semibold">📝 문의 작성</div>
 
       <div>
-        <label className="text-xs text-neutral-500 mb-1 block">카테고리</label>
+        <label className="text-xs text-neutral-500 mb-1.5 block font-medium">카테고리</label>
         <div className="grid grid-cols-5 gap-1.5">
-          {Object.entries(CAT_LABELS).map(([key, { label, icon }]) => (
+          {Object.entries(CAT_LABELS).map(([key, { label, icon, bg, text }]) => (
             <button
               key={key}
               onClick={() => setCategory(key)}
-              className={`rounded border px-2 py-2 text-[11px] ${
-                category === key ? "border-blue-500 bg-blue-50" : "border-neutral-200 bg-white"
+              className={`rounded-xl border-2 px-2 py-2.5 text-[11px] transition-all ${
+                category === key
+                  ? "border-indigo-500 bg-indigo-50 ring-2 ring-indigo-200"
+                  : `border-transparent ${bg}`
               }`}
             >
-              <div>{icon}</div>
-              <div className="mt-0.5">{label}</div>
+              <div className="text-lg">{icon}</div>
+              <div className={`mt-0.5 ${text} font-medium`}>{label}</div>
             </button>
           ))}
         </div>
       </div>
 
       <div>
-        <label className="text-xs text-neutral-500 mb-1 block">제목</label>
+        <label className="text-xs text-neutral-500 mb-1.5 block font-medium">제목</label>
         <input
           type="text"
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
           placeholder="간단한 제목"
-          className="w-full rounded border border-neutral-300 px-3 py-2 text-sm"
+          className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
         />
       </div>
 
       <div>
-        <label className="text-xs text-neutral-500 mb-1 block">
+        <label className="text-xs text-neutral-500 mb-1.5 block font-medium">
           내용
           {samples && !body && (
             <button
               onClick={() => setBody(samples)}
-              className="ml-2 text-blue-600 hover:underline"
+              className="ml-2 text-blue-600 hover:underline font-normal"
             >
               📋 예시 자동 입력
             </button>
@@ -476,11 +786,11 @@ function TicketForm({
           onChange={(e) => setBody(e.target.value)}
           placeholder="문의 내용을 자세히 작성해주세요."
           rows={5}
-          className="w-full rounded border border-neutral-300 px-3 py-2 text-sm resize-none"
+          className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm resize-none focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-100"
         />
       </div>
 
-      <div className="rounded-lg bg-amber-50 border border-amber-200 p-3 text-[11px] text-amber-800">
+      <div className="rounded-xl bg-amber-50 border border-amber-200 p-3 text-[11px] text-amber-800">
         ⚠️ AI가 먼저 검토해 1차 답변하거나, 사람 검토가 필요한 경우 담당팀에 전달됩니다.
         <br />
         담당팀 처리는 비실시간이며 구체적인 시간은 약속하지 않습니다.
@@ -489,9 +799,16 @@ function TicketForm({
       <button
         onClick={submit}
         disabled={submitting || !subject.trim() || !body.trim()}
-        className="w-full rounded-lg bg-blue-600 text-white py-2.5 text-sm font-medium disabled:opacity-50"
+        className="w-full rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 text-sm font-semibold disabled:opacity-50 hover:from-indigo-700 hover:to-purple-700 shadow-md"
       >
-        {submitting ? "처리 중..." : "문의 제출"}
+        {submitting ? (
+          <span className="inline-flex items-center gap-2">
+            <span className="inline-block w-3 h-3 rounded-full bg-white/50 animate-pulse" />
+            AI 처리 중...
+          </span>
+        ) : (
+          "문의 제출"
+        )}
       </button>
     </div>
   );
@@ -534,7 +851,7 @@ function TicketDetail({ ticketId, onBack }: { ticketId: string; onBack: () => vo
   }
 
   const status = STATUS_LABELS[ticket.status];
-  const cat = CAT_LABELS[ticket.category] ?? { label: ticket.category, icon: "📝", color: "bg-neutral-100" };
+  const cat = CAT_LABELS[ticket.category] ?? CAT_LABELS.account;
 
   return (
     <div className="space-y-4">
@@ -542,22 +859,24 @@ function TicketDetail({ ticketId, onBack }: { ticketId: string; onBack: () => vo
         ← 내 문의 목록
       </button>
 
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="text-lg">{cat.icon}</span>
-          <div>
-            <div className="text-sm font-medium">{ticket.subject}</div>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2 min-w-0">
+          <span className={`text-lg ${cat.bg} rounded-lg w-9 h-9 flex items-center justify-center`}>
+            {cat.icon}
+          </span>
+          <div className="min-w-0">
+            <div className="text-sm font-semibold truncate">{ticket.subject}</div>
             <div className="text-[10px] text-neutral-400 font-mono">{ticket.id}</div>
           </div>
         </div>
-        <span className={`text-xs ${status.color}`}>
+        <span className={`text-xs ${status.color} whitespace-nowrap font-medium`}>
           {status.icon} {status.label}
         </span>
       </div>
 
       {/* 내 문의 */}
-      <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-3">
-        <div className="text-[10px] text-neutral-500 mb-1">
+      <div className="rounded-xl border border-neutral-200 bg-neutral-50 p-3.5">
+        <div className="text-[10px] text-neutral-500 mb-1 flex items-center gap-1">
           📝 내 문의 · {new Date(ticket.createdAt).toLocaleString()}
         </div>
         <div className="text-sm text-neutral-800 whitespace-pre-wrap">{ticket.body}</div>
@@ -565,11 +884,11 @@ function TicketDetail({ ticketId, onBack }: { ticketId: string; onBack: () => vo
 
       {/* AI 응답 */}
       {ticket.aiResponse && (
-        <div className="rounded-lg border border-blue-200 bg-blue-50 p-3">
-          <div className="text-[10px] text-blue-700 mb-1 flex items-center gap-1">
-            🤖 AI 응답 {ticket.language && <span>· {ticket.language.name}</span>}
+        <div className="rounded-xl border-2 border-blue-200 bg-gradient-to-br from-blue-50 to-indigo-50 p-3.5">
+          <div className="text-[10px] text-blue-700 mb-1.5 flex items-center gap-1 font-medium">
+            🤖 AI 응답 {ticket.language && <span className="opacity-70">· {ticket.language.name}</span>}
           </div>
-          <div className="text-sm text-neutral-800 whitespace-pre-wrap">
+          <div className="text-sm text-neutral-800 whitespace-pre-wrap leading-relaxed">
             {ticket.aiResponse.text}
           </div>
           {ticket.aiResponse.citations.length > 0 && (
@@ -580,13 +899,13 @@ function TicketDetail({ ticketId, onBack }: { ticketId: string; onBack: () => vo
           {ticket.aiResponse.toolCalls.length > 0 && (
             <details className="mt-2">
               <summary className="text-[10px] text-blue-600 cursor-pointer hover:text-blue-800">
-                AI가 사용한 툴 ({ticket.aiResponse.toolCalls.length})
+                AI가 사용한 툴 ({ticket.aiResponse.toolCalls.length}개)
               </summary>
-              <div className="mt-1 flex flex-wrap gap-1">
+              <div className="mt-1.5 flex flex-wrap gap-1">
                 {ticket.aiResponse.toolCalls.map((tc, i) => (
                   <span
                     key={i}
-                    className="rounded bg-white border border-blue-200 px-1.5 py-0.5 text-[10px]"
+                    className="rounded-md bg-white border border-blue-200 px-1.5 py-0.5 text-[10px] font-mono"
                   >
                     {tc.name}
                   </span>
@@ -599,24 +918,27 @@ function TicketDetail({ ticketId, onBack }: { ticketId: string; onBack: () => vo
 
       {/* 사람 검토 안내 */}
       {ticket.status === "pending_human" && ticket.escalation && (
-        <div className="rounded-lg border border-orange-200 bg-orange-50 p-3">
-          <div className="flex items-center gap-2 text-sm text-orange-800 font-medium">
+        <div className="rounded-xl border-2 border-orange-200 bg-gradient-to-br from-orange-50 to-amber-50 p-3.5">
+          <div className="flex items-center gap-2 text-sm text-orange-800 font-semibold">
             ⏳ 사람 검토 중
           </div>
           <div className="mt-1.5 text-xs text-orange-700">
             {QUEUE_LABELS[ticket.escalation.queue]?.label ?? ticket.escalation.queue} 으로 전달됨
-            {ticket.escalation.priority === "high" && " · ⚠ HIGH"}
+            {ticket.escalation.priority === "high" && (
+              <span className="ml-2 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-red-100 text-red-700 text-[10px] font-bold">
+                ⚠ HIGH
+              </span>
+            )}
           </div>
-          <div className="mt-1.5 text-[11px] text-orange-700">
+          <div className="mt-2 text-[11px] text-orange-700">
             처리 대기 중입니다. 처리되는 대로 안내드릴게요. 구체적인 시간은 약속하지 않습니다.
           </div>
         </div>
       )}
 
-      {/* 자동 해결 안내 */}
       {ticket.status === "answered" && !ticket.escalation && (
-        <div className="rounded-lg border border-green-200 bg-green-50 p-3 text-xs text-green-800">
-          ✓ AI가 답변했어요. 더 도움이 필요하면 아래에 이어 작성해주세요.
+        <div className="rounded-xl border-2 border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 p-3.5 text-xs text-green-800">
+          ✓ AI가 답변했어요. 도움이 됐나요?
         </div>
       )}
     </div>
@@ -658,13 +980,10 @@ function AdminConsole() {
       </div>
 
       <div className="grid md:grid-cols-2 min-h-[500px]">
-        {/* List */}
         <div className="border-r border-neutral-200 p-3 space-y-2 overflow-y-auto max-h-[600px]">
           {tickets.length === 0 && (
             <div className="text-center text-neutral-400 text-sm pt-12">
               아직 큐가 비어있습니다.
-              <br />
-              유저 위젯 탭에서 변경 액션을 요청해보세요.
             </div>
           )}
           {tickets.map((t) => {
@@ -706,7 +1025,6 @@ function AdminConsole() {
           })}
         </div>
 
-        {/* Detail */}
         <div className="p-4 overflow-y-auto max-h-[600px] bg-neutral-50">
           {!selected && (
             <div className="text-center text-neutral-400 text-xs pt-12">
@@ -747,9 +1065,15 @@ function AdminConsole() {
                 <div>
                   <div className="text-neutral-500 mb-0.5">에스컬레이션 정보</div>
                   <div>
-                    {QUEUE_LABELS[selected.escalation.queue]?.label} · {selected.escalation.priority}
+                    {QUEUE_LABELS[selected.escalation.queue]?.label} ·{" "}
+                    {selected.escalation.priority}
                   </div>
                   <div className="mt-0.5 text-neutral-600">사유: {selected.escalation.reason}</div>
+                  {selected.escalation.summary && (
+                    <div className="mt-1 bg-neutral-50 border border-neutral-200 rounded p-2 whitespace-pre-wrap">
+                      {selected.escalation.summary}
+                    </div>
+                  )}
                 </div>
               )}
               {selected.aiResponse && (
@@ -761,7 +1085,7 @@ function AdminConsole() {
                     {selected.aiResponse.toolCalls.map((t, i) => (
                       <span
                         key={i}
-                        className="rounded bg-white border border-neutral-200 px-1.5 py-0.5 text-[10px]"
+                        className="rounded bg-white border border-neutral-200 px-1.5 py-0.5 text-[10px] font-mono"
                       >
                         {t.name}
                       </span>
