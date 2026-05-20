@@ -422,22 +422,6 @@ function GameWidgetHeader({ profile }: { profile: ProfileLite | null }) {
           </div>
         )}
       </div>
-      {profile && (
-        <div className="relative mt-2.5 grid grid-cols-3 gap-1.5 text-[9px]">
-          <div className="rounded-md bg-white/10 backdrop-blur px-1.5 py-1 ring-1 ring-white/20">
-            <div className="opacity-70">진행도</div>
-            <div className="font-medium truncate">{profile.progress.questStep || "—"}</div>
-          </div>
-          <div className="rounded-md bg-white/10 backdrop-blur px-1.5 py-1 ring-1 ring-white/20">
-            <div className="opacity-70">길드</div>
-            <div className="font-medium truncate">{profile.progress.guild || "없음"}</div>
-          </div>
-          <div className="rounded-md bg-white/10 backdrop-blur px-1.5 py-1 ring-1 ring-white/20">
-            <div className="opacity-70">지갑</div>
-            <div className="font-mono text-[8px]">{profile.walletShort || "—"}</div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
