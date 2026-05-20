@@ -49,6 +49,12 @@ const CAT_LABELS: Record<string, { label: string; icon: string; bg: string; text
   onchain: { label: "NFT·지갑", icon: "💎", bg: "bg-gradient-to-br from-violet-50 to-purple-100", text: "text-purple-800", ring: "ring-purple-400" },
 };
 
+const LANG_FLAGS: Record<"ko" | "en" | "ja", { flag: string; nativeLabel: string }> = {
+  ko: { flag: "🇰🇷", nativeLabel: "한국어" },
+  en: { flag: "🇺🇸", nativeLabel: "English" },
+  ja: { flag: "🇯🇵", nativeLabel: "日本語" },
+};
+
 const QUEUE_LABELS: Record<string, { label: string; color: string }> = {
   payment: { label: "결제팀", color: "bg-emerald-100 text-emerald-700 border-emerald-300" },
   infra: { label: "INFRA팀", color: "bg-purple-100 text-purple-700 border-purple-300" },
@@ -125,34 +131,17 @@ export default function Demo() {
               </button>
             </div>
             {tab === "user" && (
-              <>
-                <select
-                  value={userId}
-                  onChange={(e) => setUserId(e.target.value)}
-                  className="rounded border border-white/20 bg-white/10 text-white px-2 py-1 text-xs backdrop-blur"
-                >
-                  {DEMO_USERS.map((u) => (
-                    <option key={u.id} value={u.id} className="text-neutral-900">
-                      {u.label}
-                    </option>
-                  ))}
-                </select>
-                <div className="flex rounded border border-white/20 overflow-hidden">
-                  {(["ko", "en", "ja"] as const).map((l) => (
-                    <button
-                      key={l}
-                      onClick={() => setLanguage(l)}
-                      className={`px-2 py-1 text-xs ${
-                        language === l
-                          ? "bg-white text-neutral-900"
-                          : "bg-white/10 text-white/80"
-                      }`}
-                    >
-                      {l === "ko" ? "한국어" : l === "en" ? "EN" : "日本語"}
-                    </button>
-                  ))}
-                </div>
-              </>
+              <select
+                value={userId}
+                onChange={(e) => setUserId(e.target.value)}
+                className="rounded border border-white/20 bg-white/10 text-white px-2 py-1 text-xs backdrop-blur"
+              >
+                {DEMO_USERS.map((u) => (
+                  <option key={u.id} value={u.id} className="text-neutral-900">
+                    {u.label}
+                  </option>
+                ))}
+              </select>
             )}
           </div>
         </div>
@@ -160,7 +149,7 @@ export default function Demo() {
 
       <main className="mx-auto max-w-6xl px-6 py-8">
         {tab === "user" ? (
-          <GameSceneView userId={userId} language={language} />
+          <GameSceneView userId={userId} language={language} setLanguage={setLanguage} />
         ) : (
           <AdminConsole />
         )}
@@ -183,7 +172,15 @@ export default function Demo() {
 // GAME SCENE VIEW (실제 게임 화면 + AI Care 버튼 + 모달 위젯)
 // ============================================================
 
-function GameSceneView({ userId, language }: { userId: string; language: "ko" | "en" | "ja" }) {
+function GameSceneView({
+  userId,
+  language,
+  setLanguage,
+}: {
+  userId: string;
+  language: "ko" | "en" | "ja";
+  setLanguage: (l: "ko" | "en" | "ja") => void;
+}) {
   const [widgetOpen, setWidgetOpen] = useState(false);
   const [pendingCount, setPendingCount] = useState(0);
 
@@ -264,6 +261,7 @@ function GameSceneView({ userId, language }: { userId: string; language: "ko" | 
               <UserWidget
                 userId={userId}
                 language={language}
+                setLanguage={setLanguage}
                 onClose={() => setWidgetOpen(false)}
               />
             </div>
@@ -306,10 +304,12 @@ type UserView = { type: "home" } | { type: "form"; presetCategory?: string; pres
 function UserWidget({
   userId,
   language,
+  setLanguage,
   onClose,
 }: {
   userId: string;
   language: "ko" | "en" | "ja";
+  setLanguage?: (l: "ko" | "en" | "ja") => void;
   onClose?: () => void;
 }) {
   const [view, setView] = useState<UserView>({ type: "home" });
@@ -336,7 +336,7 @@ function UserWidget({
   return (
     <div className="mx-auto w-full rounded-2xl bg-white shadow-[0_0_0_3px_rgba(251,191,36,0.85),0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden max-h-full flex flex-col">
       <div className="relative shrink-0">
-        <GameWidgetHeader profile={profile} />
+        <GameWidgetHeader profile={profile} language={language} setLanguage={setLanguage} />
         {onClose && (
           <button
             onClick={onClose}
@@ -386,7 +386,18 @@ function UserWidget({
   );
 }
 
-function GameWidgetHeader({ profile }: { profile: ProfileLite | null }) {
+function GameWidgetHeader({
+  profile,
+  language,
+  setLanguage,
+}: {
+  profile: ProfileLite | null;
+  language?: "ko" | "en" | "ja";
+  setLanguage?: (l: "ko" | "en" | "ja") => void;
+}) {
+  const [langOpen, setLangOpen] = useState(false);
+  const current = language ? LANG_FLAGS[language] : LANG_FLAGS.ko;
+
   return (
     <div className="relative bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 px-4 py-3 text-white overflow-hidden border-b-2 border-amber-400/60">
       {/* 배경 장식 */}
@@ -401,24 +412,50 @@ function GameWidgetHeader({ profile }: { profile: ProfileLite | null }) {
             AI CARE — 고객지원
           </div>
         </div>
-        {profile && (
-          <div className="flex items-center gap-1.5 rounded-full bg-white/15 backdrop-blur px-2 py-1 ring-1 ring-white/30">
-            <div className="w-7 h-7 rounded-full bg-white/30 flex items-center justify-center text-xs font-bold">
-              {profile.displayName.slice(0, 1)}
-            </div>
-            <div className="leading-tight">
-              <div className="text-[10px] font-semibold flex items-center gap-1">
-                {profile.displayName}
-                {profile.banned && (
-                  <span className="text-[7px] px-1 py-0.5 rounded bg-red-500/40">BAN</span>
-                )}
-              </div>
-              <div className="text-[8px] opacity-80">
-                {profile.mainCharacter
-                  ? `Lv.${profile.mainCharacter.level} ${profile.mainCharacter.class}`
-                  : "—"}
-              </div>
-            </div>
+        {/* 언어 국기 셀렉터 — 기본은 현재 국기, 클릭 시 다른 언어 선택 */}
+        {language && setLanguage && (
+          <div className="relative">
+            <button
+              onClick={() => setLangOpen((v) => !v)}
+              className="flex items-center gap-1.5 rounded-full bg-white/15 backdrop-blur px-2.5 py-1.5 ring-1 ring-amber-300/60 hover:bg-white/25 transition-all"
+              aria-label="언어 변경"
+            >
+              <span className="text-xl leading-none">{current.flag}</span>
+              <span className="text-[10px] font-semibold">{current.nativeLabel}</span>
+              <span className="text-[8px] opacity-70">▾</span>
+            </button>
+            {langOpen && (
+              <>
+                <div
+                  className="fixed inset-0 z-10"
+                  onClick={() => setLangOpen(false)}
+                />
+                <div className="absolute right-0 top-full mt-1.5 z-20 rounded-xl bg-slate-900 ring-2 ring-amber-400/70 shadow-2xl overflow-hidden min-w-[140px]">
+                  {(Object.keys(LANG_FLAGS) as Array<"ko" | "en" | "ja">).map((k) => {
+                    const v = LANG_FLAGS[k];
+                    const active = language === k;
+                    return (
+                      <button
+                        key={k}
+                        onClick={() => {
+                          setLanguage(k);
+                          setLangOpen(false);
+                        }}
+                        className={`w-full flex items-center gap-2 px-3 py-2 text-left text-[11px] transition-colors ${
+                          active
+                            ? "bg-gradient-to-r from-amber-500/30 to-amber-600/20 text-amber-100"
+                            : "text-white/80 hover:bg-white/10"
+                        }`}
+                      >
+                        <span className="text-lg leading-none">{v.flag}</span>
+                        <span className="font-medium flex-1">{v.nativeLabel}</span>
+                        {active && <span className="text-amber-300 text-[10px]">✓</span>}
+                      </button>
+                    );
+                  })}
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>
