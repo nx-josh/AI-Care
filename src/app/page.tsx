@@ -41,12 +41,12 @@ type ProfileLite = {
   walletShort: string | null;
 };
 
-const CAT_LABELS: Record<string, { label: string; icon: string; bg: string; text: string }> = {
-  account: { label: "계정·결제", icon: "💳", bg: "bg-emerald-50", text: "text-emerald-700" },
-  faq: { label: "게임 진행", icon: "🎮", bg: "bg-blue-50", text: "text-blue-700" },
-  bug: { label: "버그·오류", icon: "🐛", bg: "bg-amber-50", text: "text-amber-700" },
-  abuse: { label: "유저 신고", icon: "🚨", bg: "bg-rose-50", text: "text-rose-700" },
-  onchain: { label: "지갑·NFT", icon: "🔗", bg: "bg-purple-50", text: "text-purple-700" },
+const CAT_LABELS: Record<string, { label: string; icon: string; bg: string; text: string; ring: string }> = {
+  account: { label: "계정·결제", icon: "💰", bg: "bg-gradient-to-br from-amber-50 to-yellow-100", text: "text-amber-800", ring: "ring-amber-400" },
+  faq: { label: "게임 진행", icon: "⚔️", bg: "bg-gradient-to-br from-cyan-50 to-blue-100", text: "text-blue-800", ring: "ring-cyan-400" },
+  bug: { label: "버그·오류", icon: "🛡️", bg: "bg-gradient-to-br from-orange-50 to-amber-100", text: "text-orange-800", ring: "ring-orange-400" },
+  abuse: { label: "유저 신고", icon: "🚨", bg: "bg-gradient-to-br from-rose-50 to-red-100", text: "text-rose-800", ring: "ring-rose-400" },
+  onchain: { label: "NFT·지갑", icon: "💎", bg: "bg-gradient-to-br from-violet-50 to-purple-100", text: "text-purple-800", ring: "ring-purple-400" },
 };
 
 const QUEUE_LABELS: Record<string, { label: string; color: string }> = {
@@ -225,50 +225,30 @@ function GameSceneView({ userId, language }: { userId: string; language: "ko" | 
           onClick={() => widgetOpen && setWidgetOpen(false)}
         />
 
-        {/* 게임 상단 HUD (이미지 위 오버레이) */}
+        {/* AI Care 사이드 버튼 — 게임의 SHOP 아래 위치 (게임 자체 UI와 어울리게) */}
         {!widgetOpen && (
-          <div className="absolute top-3 left-3 right-3 flex items-start justify-between pointer-events-none">
-            <div className="flex flex-col gap-1 text-white">
-              <div className="flex items-center gap-1 bg-black/50 backdrop-blur rounded-md px-1.5 py-0.5 w-fit">
-                <div className="w-16 h-1.5 rounded-full bg-red-900/60 overflow-hidden">
-                  <div className="h-full bg-red-500" style={{ width: "78%" }} />
-                </div>
-                <span className="text-[9px]">234/300</span>
-              </div>
-              <div className="flex items-center gap-1 bg-black/50 backdrop-blur rounded-md px-1.5 py-0.5 w-fit">
-                <div className="w-12 h-1.5 rounded-full bg-blue-900/60 overflow-hidden">
-                  <div className="h-full bg-blue-400" style={{ width: "60%" }} />
-                </div>
-                <span className="text-[9px]">60/100</span>
+          <button
+            onClick={() => setWidgetOpen(true)}
+            className="group absolute right-2 top-[34%] flex flex-col items-center gap-1"
+            aria-label="Open AI Care"
+          >
+            <div className="relative">
+              {pendingCount > 0 && (
+                <span className="absolute -top-1 -right-1 z-10 min-w-[18px] h-[18px] rounded-full bg-red-500 text-white text-[10px] font-bold flex items-center justify-center px-1 ring-2 ring-white shadow">
+                  {pendingCount}
+                </span>
+              )}
+              {/* 외곽 골드 링 */}
+              <div className="absolute inset-0 rounded-full bg-gradient-to-br from-amber-300 via-yellow-400 to-amber-500 blur-md opacity-70 group-hover:opacity-100 animate-pulse" />
+              {/* 본체 — 게임 SHOP/Wild 버튼 톤 */}
+              <div className="relative w-14 h-14 rounded-full bg-gradient-to-br from-cyan-300 via-blue-500 to-indigo-700 ring-[3px] ring-amber-300 shadow-[0_4px_12px_rgba(0,0,0,0.5)] flex items-center justify-center text-2xl group-hover:scale-110 transition-transform">
+                <span className="drop-shadow-[0_2px_2px_rgba(0,0,0,0.6)]">🎧</span>
               </div>
             </div>
-            <div className="flex flex-col gap-1 items-end text-white">
-              <div className="bg-black/50 backdrop-blur rounded-md px-1.5 py-0.5 text-[9px]">
-                🗺️ Chapter 3
-              </div>
-              <div className="bg-black/50 backdrop-blur rounded-md px-1.5 py-0.5 text-[9px]">
-                💰 12,450
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* 게임 하단 액션바 — 세로 화면 컴팩트 */}
-        {!widgetOpen && (
-          <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex items-end gap-1.5">
-            <GameActionButton icon="⚔️" label="QUEST" compact />
-            <GameActionButton icon="🎒" label="ITEM" compact />
-            <GameActionButton icon="🗺️" label="MAP" compact />
-            <GameActionButton icon="🛒" label="SHOP" compact />
-            <GameActionButton
-              icon="🎧"
-              label="AI Care"
-              highlight
-              compact
-              badge={pendingCount > 0 ? pendingCount : undefined}
-              onClick={() => setWidgetOpen(true)}
-            />
-          </div>
+            <span className="px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-500 to-yellow-400 text-[9px] font-extrabold text-stone-900 tracking-wider shadow-md ring-1 ring-amber-300/60">
+              AI CARE
+            </span>
+          </button>
         )}
 
         {/* AI Care 위젯 모달 레이어 — 세로 화면에 꽉 채우기 */}
@@ -292,16 +272,12 @@ function GameSceneView({ userId, language }: { userId: string; language: "ko" | 
       </div>
 
       {/* 게임 뷰포트 외부 — 데모 안내 */}
-      <div className="mt-3 flex items-center justify-between text-[11px] text-white/60 px-2">
-        <div>
-          💡 게임 화면 안에 AI Care 버튼이 임베드된 모습입니다.
-          {!widgetOpen && (
-            <span className="ml-1">
-              하단 <b className="text-pink-300">🎧 AI Care</b> 버튼을 눌러보세요.
-            </span>
-          )}
-          {widgetOpen && <span className="ml-1">ESC 또는 바깥 클릭으로 닫기.</span>}
-        </div>
+      <div className="mt-3 text-center text-[11px] text-white/60">
+        {!widgetOpen ? (
+          <>오른쪽 사이드의 <b className="text-amber-300">🎧 AI CARE</b> 버튼을 눌러보세요</>
+        ) : (
+          <>ESC 또는 바깥 클릭으로 닫기</>
+        )}
       </div>
 
       <style jsx>{`
@@ -320,45 +296,6 @@ function GameSceneView({ userId, language }: { userId: string; language: "ko" | 
   );
 }
 
-function GameActionButton({
-  icon,
-  label,
-  highlight,
-  badge,
-  compact,
-  onClick,
-}: {
-  icon: string;
-  label: string;
-  highlight?: boolean;
-  badge?: number;
-  compact?: boolean;
-  onClick?: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      disabled={!onClick && !highlight}
-      className={`group relative flex flex-col items-center gap-0.5 rounded-xl backdrop-blur-md transition-all duration-200 ${
-        compact ? "px-2 py-1.5" : "px-3 py-2.5"
-      } ${
-        highlight
-          ? "bg-gradient-to-br from-pink-500 to-purple-600 ring-2 ring-pink-300/50 hover:scale-110 hover:ring-pink-300 shadow-lg shadow-pink-500/50 animate-pulse hover:animate-none cursor-pointer"
-          : "bg-black/40 ring-1 ring-white/20 hover:bg-black/60 hover:ring-white/40 cursor-not-allowed opacity-70"
-      }`}
-    >
-      {badge !== undefined && (
-        <span className={`absolute -top-1 -right-1 min-w-[16px] h-[16px] rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center px-1 ring-2 ring-white/80`}>
-          {badge}
-        </span>
-      )}
-      <span className={compact ? "text-base" : "text-xl"}>{icon}</span>
-      <span className={`uppercase tracking-wider text-white font-semibold ${compact ? "text-[8px]" : "text-[9px]"}`}>
-        {label}
-      </span>
-    </button>
-  );
-}
 
 // ============================================================
 // USER WIDGET
@@ -397,13 +334,13 @@ function UserWidget({
   }, [userId]);
 
   return (
-    <div className="mx-auto w-full rounded-2xl bg-white shadow-2xl border border-white/20 overflow-hidden ring-1 ring-black/5 max-h-full flex flex-col">
+    <div className="mx-auto w-full rounded-2xl bg-white shadow-[0_0_0_3px_rgba(251,191,36,0.85),0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden max-h-full flex flex-col">
       <div className="relative shrink-0">
         <GameWidgetHeader profile={profile} />
         {onClose && (
           <button
             onClick={onClose}
-            className="absolute top-2.5 right-2.5 w-7 h-7 rounded-full bg-white/20 hover:bg-white/40 text-white flex items-center justify-center text-sm backdrop-blur transition-colors"
+            className="absolute top-2 right-2 w-7 h-7 rounded-full bg-gradient-to-br from-red-500 to-red-700 hover:from-red-600 hover:to-red-800 text-white flex items-center justify-center text-sm ring-2 ring-amber-300 shadow-lg transition-all"
             aria-label="Close"
           >
             ✕
@@ -451,14 +388,18 @@ function UserWidget({
 
 function GameWidgetHeader({ profile }: { profile: ProfileLite | null }) {
   return (
-    <div className="relative bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 px-4 py-3 text-white overflow-hidden">
-      <div className="absolute -top-4 -right-4 text-6xl opacity-10">🎧</div>
+    <div className="relative bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 px-4 py-3 text-white overflow-hidden border-b-2 border-amber-400/60">
+      {/* 배경 장식 */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,_rgba(56,189,248,0.25),_transparent_60%)]" />
+      <div className="absolute -top-4 -right-4 text-6xl opacity-10">❄️</div>
       <div className="relative flex items-center justify-between gap-2 pr-8">
         <div>
-          <div className="text-[9px] uppercase tracking-wider opacity-80">
-            {profile?.tenantId === "pixel-heroes" ? "🎮 Pixel Heroes" : "🎮 Game"}
+          <div className="text-[9px] uppercase tracking-[0.2em] text-amber-300 font-semibold flex items-center gap-1">
+            ⚔️ Pixel Heroes
           </div>
-          <div className="text-sm font-bold mt-0.5">AI Care 고객지원</div>
+          <div className="text-sm font-bold mt-0.5 bg-gradient-to-r from-amber-200 via-yellow-100 to-amber-200 bg-clip-text text-transparent">
+            AI CARE — 고객지원
+          </div>
         </div>
         {profile && (
           <div className="flex items-center gap-1.5 rounded-full bg-white/15 backdrop-blur px-2 py-1 ring-1 ring-white/30">
@@ -625,11 +566,11 @@ function Home({
                 <button
                   key={s.id}
                   onClick={() => onOpenForm(s.category, s.samples[language])}
-                  className={`flex flex-col items-center gap-1 rounded-xl border-2 border-transparent ${cat.bg} px-2 py-3 hover:border-indigo-300 transition-all hover:scale-105`}
+                  className={`flex flex-col items-center gap-1 rounded-xl ${cat.bg} px-2 py-3 ring-2 ${cat.ring}/40 hover:${cat.ring} hover:scale-105 transition-all shadow-sm`}
                   title={s.description}
                 >
-                  <span className="text-2xl">{s.icon}</span>
-                  <span className={`text-[10px] ${cat.text} text-center leading-tight font-medium`}>
+                  <span className="text-2xl drop-shadow-sm">{s.icon}</span>
+                  <span className={`text-[10px] ${cat.text} text-center leading-tight font-bold`}>
                     {s.label}
                   </span>
                 </button>
@@ -799,7 +740,7 @@ function TicketForm({
       <button
         onClick={submit}
         disabled={submitting || !subject.trim() || !body.trim()}
-        className="w-full rounded-xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white py-3 text-sm font-semibold disabled:opacity-50 hover:from-indigo-700 hover:to-purple-700 shadow-md"
+        className="w-full rounded-xl bg-gradient-to-b from-amber-400 via-yellow-500 to-amber-600 text-stone-900 py-3 text-sm font-extrabold tracking-wide ring-2 ring-amber-300 shadow-lg hover:from-amber-300 hover:to-amber-500 disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {submitting ? (
           <span className="inline-flex items-center gap-2">
