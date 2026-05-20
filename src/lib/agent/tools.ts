@@ -1,7 +1,7 @@
 import type Anthropic from "@anthropic-ai/sdk";
 import { findProfile } from "@/lib/mock/profiles";
 import { searchKB } from "@/lib/mock/kb";
-import { addToQueue, type QueueName, type Priority } from "@/lib/store/queue";
+import type { QueueName, Priority } from "@/lib/store/tickets";
 
 export const TOOLS: Anthropic.Tool[] = [
   {
@@ -68,11 +68,9 @@ export const TOOLS: Anthropic.Tool[] = [
   },
 ];
 
-type ToolContext = {
+export type ToolContext = {
   userId: string;
-  conversation: Array<{ role: string; content: string }>;
   toolCalls: Array<{ name: string; input: unknown; output: unknown }>;
-  category: string;
   onEscalate: (item: {
     queue: QueueName;
     priority: Priority;
@@ -115,20 +113,20 @@ export async function runTool(
         device: profile.deviceContext,
         recentEvents: [
           {
-            ts: "2026-05-19T08:55:30Z",
+            ts: "2026-05-20T08:55:30Z",
             level: "error",
             event: "client_crash",
             scene: "dungeon_03_boss_phase_1",
             build: profile.deviceContext.build,
           },
           {
-            ts: "2026-05-19T08:55:28Z",
+            ts: "2026-05-20T08:55:28Z",
             level: "info",
             event: "scene_enter",
             scene: "dungeon_03",
           },
           {
-            ts: "2026-05-19T08:50:11Z",
+            ts: "2026-05-20T08:50:11Z",
             level: "info",
             event: "session_start",
           },
@@ -176,23 +174,7 @@ export async function runTool(
       const summary = String(input.summary ?? "");
       const suggestedAction =
         typeof input.suggestedAction === "string" ? input.suggestedAction : undefined;
-
       ctx.onEscalate({ queue, priority, reason, summary, suggestedAction });
-
-      addToQueue({
-        ticketId: `T-${Date.now()}`,
-        queue,
-        priority,
-        reason,
-        summary,
-        suggestedAction,
-        userIdentity: profile ? `${profile.identityKind}:${profile.identityValue}` : "anonymous",
-        userName: profile?.displayName ?? "Anonymous",
-        category: ctx.category,
-        toolCalls: ctx.toolCalls.map((t) => ({ name: t.name, input: t.input, output: t.output })),
-        conversationSnippet: ctx.conversation.slice(-6),
-      });
-
       return { ok: true, queued: true, queue, priority };
     }
   }

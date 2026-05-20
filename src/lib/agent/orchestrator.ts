@@ -48,16 +48,10 @@ export async function runAgent(req: ChatRequest): Promise<ChatResult> {
 
   const toolCalls: ToolCallRecord[] = [];
   let escalated: ChatResult["escalated"] = null;
-  const conversationForQueue = [
-    ...(req.history ?? []),
-    { role: "user", content: req.text },
-  ];
 
   const ctx = {
     userId: req.userId,
-    conversation: conversationForQueue,
     toolCalls,
-    category,
     onEscalate: (e: { queue: string; priority: string; reason: string }) => {
       escalated = { queue: e.queue, priority: e.priority, reason: e.reason };
     },
@@ -98,9 +92,10 @@ export async function runAgent(req: ChatRequest): Promise<ChatResult> {
   }
 
   return {
-    reply: language.iso === "kor"
-      ? "처리에 시간이 더 필요해 사람 검토 큐로 이관했습니다."
-      : "Routing to a human reviewer for further handling.",
+    reply:
+      language.iso === "kor"
+        ? "처리에 시간이 더 필요해 사람 검토 큐로 이관했습니다."
+        : "Routing to a human reviewer for further handling.",
     category,
     language,
     toolCalls,
