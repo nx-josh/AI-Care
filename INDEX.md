@@ -2,7 +2,7 @@
 
 **프로젝트**: CROSS AI Care (CROSS Triage 확장형)
 **출시 목표**: 2026년 6월 내
-**관계**: `to-nexus/game-hub-plan` CROSS Triage 모듈의 확장
+**관계**: 스펙은 `to-nexus/game-hub-plan` CROSS Triage 모듈(TRIAGE-001~006) 상속, **코드 레포는 분리** (`nx-josh/AI-Care`), **UI는 Hub Console에 통합** (DECISIONS §10 INT-1)
 **문서 상태**: 기획 v0.1 + DECISIONS v0.1
 **구현 상태**: M0 (Vercel 프로덕션) — `/api/tickets`, `/api/admin/{queue,stats,kb}`, `/api/faq`, `/api/me` + Hub Console (티켓 큐 · KB 주입 탭)
 
@@ -68,6 +68,7 @@
 | **사람 처리 SLA** | 미보장 (상담사 없음). AI 응답 SLO만 보장 (p95 <10s) |
 | **PII 분류** | 캐릭터·길드명·게임 닉네임 = 약한 PII (마스킹 X) |
 | **PCI DSS / CCPA** | 적용 X (결제 위임 / 데이터 판매 안 함) |
+| **통합 모델** | 코드 레포 분리 · UI는 Hub Console에 통합. 통합 메커니즘(INT-2)·인증 동기화(INT-3)는 Hub Console 측 확정 후 결정 |
 
 ---
 

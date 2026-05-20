@@ -284,7 +284,7 @@
 
 ## 9. 미해결 사항
 
-- [ ] **RBAC-1** Hub Builder RBAC와의 통합 방식 — 동일 시스템 통합 vs 별도 동기화
+- [ ] **RBAC-1** Hub Builder RBAC 동기화 메커니즘 — 레포 분리 확정(DECISIONS §10 INT-1)이므로 "별도 동기화" 트랙. 후보: SSO(OIDC) / 공유 JWT / 토큰 propagation. Hub Console 통합 시점 결정(INT-3)
 - [ ] **RBAC-2** tenant_admin 작성 KB의 cross_admin 검토 필수 여부
 - [ ] **RBAC-3** JIT 권한 신청·승인 시스템 (사람이 승인 vs 자동 룰)
 - [ ] **RBAC-4** MFA 강제 범위·방식 (TOTP / Passkey / SSO)

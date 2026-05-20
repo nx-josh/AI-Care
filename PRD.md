@@ -4,7 +4,8 @@
 **최종 수정일**: 2026-05-19
 **오너**: TBD
 **관계 문서**:
-- 상위: `to-nexus/game-hub-plan` 저장소 `modules/cross-triage/` 스펙 (TRIAGE-001~006)
+- 상위: `to-nexus/game-hub-plan` 저장소 `modules/cross-triage/` 스펙 (TRIAGE-001~006) — **스펙 상속**
+- 코드 레포: `nx-josh/AI-Care` (분리). UI는 Hub Console에 통합 — 통합 메커니즘은 DECISIONS §10 INT-2, 인증 동기화는 INT-3
 - 하위:
   - `docs/AI_POLICY.md` (AI 응답 정책)
   - `docs/PII_MASKING.md` (PII 마스킹 명세)
